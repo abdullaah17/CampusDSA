@@ -16,9 +16,9 @@ public:
 
     bool isEmpty() { return top == nullptr; }
 
-    void push(char c) {
+    void push(char val) {
         Node* newNode = new Node();
-        newNode->data = c;
+        newNode->data = val;
         newNode->next = top;
         top = newNode;
     }
