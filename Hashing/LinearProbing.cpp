@@ -11,7 +11,7 @@ public:
             table[i] = -1; // -1 = empty
     }
 
-    int hashFunction(int key) {
+    int hashFunction(int key) { // basic hash function
         return key % size;
     }
 
