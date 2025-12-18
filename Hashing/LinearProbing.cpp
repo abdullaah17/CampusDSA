@@ -8,7 +8,7 @@ public:
 
     LinearProbing() {
         for (int i = 0; i < size; i++) 
-            table[i] = -1; // -1 = empty
+            table[i] = -1; // initializing with -1 = empty
     }
 
     int hashFunction(int key) { // basic hash function
