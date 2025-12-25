@@ -23,7 +23,7 @@ public:
 
     void DFS(int start) {
         vector<bool> visited(V, false);
-        stack<int> s;
+        stack<int> s; // using stack for dfs
 
         s.push(start);  // start from here
 
