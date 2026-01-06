@@ -18,7 +18,7 @@ public:
 
     void addEdge(int u, int v) {
         adj[u].push_back(v);
-        adj[v].push_back(u);
+        adj[v].push_back(u); //[v,u]
     }
 
     void DFS(int start) {
