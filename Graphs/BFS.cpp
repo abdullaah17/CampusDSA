@@ -23,7 +23,7 @@ public:
 
     void BFS(int start) {
         vector<bool> visited(V, false);
-        queue<int> q; // using queue for bfs, FIFO
+        queue<int> q; // using queue for bfs, FIFO.
 
         visited[start] = true;
         q.push(start);

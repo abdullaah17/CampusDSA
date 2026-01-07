@@ -32,12 +32,12 @@ public:
     void heapify(int i) {
         int smallest = i;
         int l = left(i);
-        int r = right(i);
+        int r = right(i); //Get left & right children
 
-        if (l < size && heap[l] < heap[smallest])
-            smallest = l;
-        if (r < size && heap[r] < heap[smallest])
-            smallest = r;
+        if (l < size && heap[l] < heap[smallest]) //If left child exists AND is smaller 
+            smallest = l; //update smallest
+        if (r < size && heap[r] < heap[smallest]) //If right child exists AND is smaller 
+            smallest = r; //update largest
 
         if (smallest != i) {
             swap(heap[i], heap[smallest]);
@@ -49,9 +49,9 @@ public:
     int deleteMin() {
         if (size <= 0) return -1;
 
-        int root = heap[0];
-        heap[0] = heap[size - 1];
-        size--;
+        int root = heap[0]; //Store smallest element (root)
+        heap[0] = heap[size - 1]; //Replace root with last element
+        size--; //reduces heap size 
         heapify(0);
 
         return root;
