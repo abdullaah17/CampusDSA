@@ -1,256 +1,225 @@
 #include <iostream>
 using namespace std;
 
-struct node {
+struct Node {
     int data;
-    node* left;
-    node* right;
+    Node* left;
+    Node* right;
     int height;
+
+    Node(int val) {
+        data = val;
+        left = NULL;
+        right = NULL;
+        height = 1;   // new node starts at height 1
+    }
 };
 
-// ************* UTILITY FUNCTIONS *************
-
-int height(Node* n) {
-    if (n == NULL)
+// --------------------
+// Get Height
+// --------------------
+int height(Node* node) {
+    if (node == NULL)
         return 0;
-    return n->height;
+    return node->height;
 }
 
-int maxVal(int a, int b) {
-    return (a > b) ? a : b;
-}
-
-node* getnode(int key) {
-    node* newnode = new node;
-    newnode->data = key;
-    newnode->left = newnode->right = NULL;
-    newnode->height = 1;
-    return newnode;
-}
-
-int getBalance(Node* n) {
-    if (n == NULL)
+// --------------------
+// Get Balance Factor
+// BF = height(left) - height(right)
+// --------------------
+int getBalance(Node* node) {
+    if (node == NULL)
         return 0;
-    return height(n->left) - height(n->right);
+    return height(node->left) - height(node->right);
 }
 
-// ************* ROTATIONS *************
+// ==================================================
+// RIGHT ROTATION (LL CASE)
+// ==================================================
+/*
+    BEFORE (LL Case):
 
-node* right_rotate(node* x) {                   //   x     LL Case:
-    node* y = x->left;                         //   /
-    node* temp = y->right;                    //   y
-                                             //     \
-                                            //      temp
-    y->right = x;
-    x->left = temp;
-    //After Rotation:
+            z
+           /
+          y
+         /
+        x
 
-    //         y
-    //          \
-    //           x
-    //          /
-    //        temp
-    //
+    AFTER Right Rotation:
 
-    x->height = 1 + maxVal(height(x->left), height(x->right));
-    y->height = 1 + maxVal(height(y->left), height(y->right));
+            y
+           / \
+          x   z
+*/
+Node* rightRotate(Node* z) {
+    Node* y = z->left;
+    Node* T2 = y->right;
 
-    return y;
+    // Rotation
+    y->right = z;
+    z->left = T2;
+
+    // Update heights
+    z->height = max(height(z->left), height(z->right)) + 1;
+    y->height = max(height(y->left), height(y->right)) + 1;
+
+    return y;   // new root
 }
 
-node* left_rotate(node* x) {                   // RR Case
-    node* y = x->right;
-    node* temp = y->left;
+// ==================================================
+// LEFT ROTATION (RR CASE)
+// ==================================================
+/*
+    BEFORE (RR Case):
 
-    y->left = x;
-    x->right = temp;
+        z
+         \
+          y
+           \
+            x
 
-    x->height = 1 + maxVal(height(x->left), height(x->right));
-    y->height = 1 + maxVal(height(y->left), height(y->right));
+    AFTER Left Rotation:
 
-    return y;
+            y
+           / \
+          z   x
+*/
+Node* leftRotate(Node* z) {
+    Node* y = z->right;
+    Node* T2 = y->left;
+
+    // Rotation
+    y->left = z;
+    z->right = T2;
+
+    // Update heights
+    z->height = max(height(z->left), height(z->right)) + 1;
+    y->height = max(height(y->left), height(y->right)) + 1;
+
+    return y;   // new root
 }
 
-// ************* INSERT OPERATION *************
+// ==================================================
+// AVL INSERTION (handles all 4 cases)
+// ==================================================
+Node* insert(Node* node, int key) {
 
-node* insert(node* root, int k) {
-    if (root == NULL)
-        return getnode(k);
+    // Normal BST insertion
+    if (node == NULL)
+        return new Node(key);
 
-    if (k < root->data)
-        root->left = insert(root->left, k);
-    else if (k > root->data)
-        root->right = insert(root->right, k);
+    if (key < node->data)
+        node->left = insert(node->left, key);
+    else if (key > node->data)
+        node->right = insert(node->right, key);
     else
-        return root; // no duplicates
+        return node;   // no duplicates
 
-    root->height = 1 + maxVal(height(root->left), height(root->right));
+    // Update height
+    node->height = 1 + max(height(node->left), height(node->right));
 
-    int balance = getbalance(root);
+    // Get balance factor
+    int balance = getBalance(node);
 
-    // Left Left
-    if (balance > 1 && k < root->left->data)
-        return right_rotate(root);
+    // ==================================================
+    // LL CASE
+    // Insertion in LEFT subtree of LEFT child
+    //
+    //        z
+    //       /
+    //      y
+    //     /
+    //    x
+    // ==================================================
+    if (balance > 1 && key < node->left->data)
+        return rightRotate(node);
 
-    // Right Right
-    if (balance < -1 && k > root->right->data)
-        return left_rotate(root);
+    // ==================================================
+    // RR CASE
+    // Insertion in RIGHT subtree of RIGHT child
+    //
+    //    z
+    //     \
+    //      y
+    //       \
+    //        x
+    // ==================================================
+    if (balance < -1 && key > node->right->data)
+        return leftRotate(node);
 
-    // Left Right
-    if (balance > 1 && k > root->left->data) {
-        root->left = left_rotate(root->left);
-        return right_rotate(root);
+    // ==================================================
+    // LR CASE
+    // Insertion in RIGHT subtree of LEFT child
+    //
+    //        z
+    //       /
+    //      y
+    //       \
+    //        x
+    //
+    // Step 1: Left Rotate y
+    // Step 2: Right Rotate z
+    // ==================================================
+    if (balance > 1 && key > node->left->data) {
+        node->left = leftRotate(node->left);
+        return rightRotate(node);
     }
 
-    // Right Left
-    if (balance < -1 && k < root->right->data) {
-        root->right = right_rotate(root->right);
-        return left_rotate(root);
+    // ==================================================
+    // RL CASE
+    // Insertion in LEFT subtree of RIGHT child
+    //
+    //    z
+    //     \
+    //      y
+    //     /
+    //    x
+    //
+    // Step 1: Right Rotate y
+    // Step 2: Left Rotate z
+    // ==================================================
+    if (balance < -1 && key < node->right->data) {
+        node->right = rightRotate(node->right);
+        return leftRotate(node);
     }
 
-    return root;
+    return node;
 }
 
-// ************* FIND MIN VALUE NODE (SUCCESSOR) *************
-
-node* minValueNode(node* root) {
-    node* current = root;
-    while (current->left != NULL)
-        current = current->left;
-    return current;
-}
-
-// ************* DELETE NODE *************
-
-node* delete_node(node* root, int key) {
+// --------------------
+// Inorder Traversal
+// --------------------
+void inorder(Node* root) {
     if (root == NULL)
-        return root;
+        return;
 
-    if (key < root->data)
-        root->left = delete_node(root->left, key);
-
-    else if (key > root->data)
-        root->right = delete_node(root->right, key);
-
-    else {
-        // No child or One child
-        if (root->left == NULL || root->right == NULL) {
-            node* temp = (root->left) ? root->left : root->right;
-            if (temp == NULL) {
-                delete root;
-                return NULL;
-            }
-            *root = *temp;
-            delete temp;
-        }
-        else {
-            // Two children: get inorder successor
-            node* temp = minValueNode(root->right);
-            root->data = temp->data;
-            root->right = delete_node(root->right, temp->data);
-        }
-    }
-
-    if (root == NULL)
-        return root;
-
-    root->height = 1 + maxVal(height(root->left), height(root->right));
-
-    int balance = getbalance(root);
-
-    // Left Left
-    if (balance > 1 && getbalance(root->left) >= 0)
-        return right_rotate(root);
-
-    // Left Right
-    if (balance > 1 && getbalance(root->left) < 0) {
-        root->left = left_rotate(root->left);
-        return right_rotate(root);
-    }
-
-    // Right Right
-    if (balance < -1 && getbalance(root->right) <= 0)
-        return left_rotate(root);
-
-    // Right Left
-    if (balance < -1 && getbalance(root->right) > 0) {
-        root->right = right_rotate(root->right);
-        return left_rotate(root);
-    }
-
-    return root;
-}
-
-// ************* TRAVERSALS *************
-
-void inorder(node* root) {
-    if (root == NULL) return;
     inorder(root->left);
-    cout << root->data << "  ";
+    cout << root->data << " ";
     inorder(root->right);
 }
 
-void preorder(node* root) {
-    if (root == NULL) return;
-    cout << root->data << "  ";
-    preorder(root->left);
-    preorder(root->right);
-}
-
-void postorder(node* root) {
-    if (root == NULL) return;
-    postorder(root->left);
-    postorder(root->right);
-    cout << root->data << "  ";
-}
-
-// ************* MAIN *************
-
+// --------------------
+// Main Function
+// --------------------
 int main() {
-    node* root = NULL;
-    char choice;
-    int option, value;
+    Node* root = NULL;
 
-    do {
-        cout << "\n---------------- AVL TREE MENU ----------------\n";
-        cout << "1. Insert\n2. Delete\n3. Inorder\n4. Preorder\n5. Postorder\n";
-        cout << "-----------------------------------------------\n";
-        cout << "Enter your option: ";
-        cin >> option;
+    // Try these insertions to trigger rotations:
+    // LL Case: 30, 20, 10
+    // RR Case: 10, 20, 30
+    // LR Case: 30, 10, 20
+    // RL Case: 10, 30, 20
 
-        switch (option) {
-        case 1:
-            cout << "Enter value to insert: ";
-            cin >> value;
-            root = insert(root, value);
-            break;
+    root = insert(root, 10);
+    root = insert(root, 20);
+    root = insert(root, 30);
+    root = insert(root, 40);
+    root = insert(root, 50);
+    root = insert(root, 25);
 
-        case 2:
-            cout << "Enter value to delete: ";
-            cin >> value;
-            root = delete_node(root, value);
-            break;
-
-        case 3:
-            inorder(root); cout << "\n";
-            break;
-
-        case 4:
-            preorder(root); cout << "\n";
-            break;
-
-        case 5:
-            postorder(root); cout << "\n";
-            break;
-
-        default:
-            cout << "Invalid option!\n";
-        }
-
-        cout << "Press Y to continue: ";
-        cin >> choice;
-
-    } while (choice == 'Y' || choice == 'y');
+    cout << "Inorder Traversal of AVL Tree: ";
+    inorder(root);
 
     return 0;
 }
