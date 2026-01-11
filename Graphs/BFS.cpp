@@ -14,12 +14,10 @@ public:
         V = v;
         adj = new list<int>[V];
     }
-
     void addEdge(int u, int v) {
         adj[u].push_back(v);
         adj[v].push_back(u);
     }
-
     void BFS(int start) {
         vector<bool> visited(V, false);
         queue<int> q; // using queue for bfs, FIFO.
