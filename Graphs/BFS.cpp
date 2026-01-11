@@ -5,7 +5,6 @@
 using namespace std;
 
 // BFS visits all nearby nodes first using a queue before going deeper.
-
 class Graph {
     int V;
     list<int>* adj;
